@@ -4108,21 +4108,22 @@
     var v = document.getElementById(id).innerHTML;
     document.getElementById(id).innerHTML = v == "" || v == b ? a : b;
   }
-  var lastScrollX = 0;
-  var pFrame = 0;
-  function present() {
-    var currScrollX = window.scrollX;
-    var step = 1;
-    document.body.scrollTo(Math.max(0, pFrame - 10), window.scrollY);
-
-    pFrame += step;
-
-    //console.log([lastScrollX,currScrollX]);
-
-    if (pFrame < 20 || Math.abs(lastScrollX - currScrollX) < step * 2) {
-      lastScrollX = currScrollX;
-      setTimeout(present, 16);
+  var PAN_SPEED = 60; // px per second
+  var lastPanT = 0;
+  var lastRenderX = 0;
+  function present(t) {
+    t = t || performance.now();
+    if (lastPanT) {
+      MEM.cursx += (PAN_SPEED * Math.min(t - lastPanT, 100)) / 1000;
+      if (MEM.cursx - lastRenderX > 128) {
+        lastRenderX = MEM.cursx;
+        update();
+      } else {
+        viewupdate();
+      }
     }
+    lastPanT = t;
+    requestAnimationFrame(present);
   }
   function reloadWSeed(s) {
     var u = window.location.href.split("?")[0];
